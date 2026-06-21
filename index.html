@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MIDI Piano Waterfall</title>
+  <link rel="icon" type="image/svg+xml" href="assets/icon/Midi.svg">
+  <link rel="stylesheet" href="style.css?v=20260621">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="hero-top">
+        <div>
+        <p class="eyebrow" data-i18n="eyebrow">MIDI Piano Waterfall</p>
+        <h1 data-i18n="title">见音 - Midi 钢琴瀑布流可视化</h1>
+        </div>
+        <div class="option-group language-options top-language-options" aria-label="语言">
+          <span data-i18n="language">语言</span>
+          <label>
+            <input type="radio" name="languageMode" value="system" checked>
+            <span data-i18n="system">系统</span>
+          </label>
+          <label>
+            <input type="radio" name="languageMode" value="zh">
+            <span>中</span>
+          </label>
+          <label>
+            <input type="radio" name="languageMode" value="en">
+            <span>EN</span>
+          </label>
+        </div>
+      </div>
+      <div class="control-panel">
+        <div class="control-toolbar">
+          <button id="menuToggleButton" class="menu-toggle-button" type="button" aria-label="Menu" aria-controls="settingsMenu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <button id="uploadToggleButton" class="upload-toggle-button" type="button" aria-label="Upload" aria-controls="uploadPanel" aria-expanded="false">
+            <span class="sidebar-icon upload-icon" aria-hidden="true"></span>
+          </button>
+          <button id="customToggleButton" class="custom-toggle-button" type="button" aria-label="Custom" aria-controls="customPanel" aria-expanded="false">
+            <span class="sidebar-icon custom-icon" aria-hidden="true"></span>
+          </button>
+          <button id="saveToggleButton" class="save-toggle-button" type="button" aria-label="Save" aria-controls="savePanel" aria-expanded="false">
+            <span class="sidebar-icon save-icon" aria-hidden="true"></span>
+          </button>
+          <button id="announcementToggleButton" class="announcement-toggle-button" type="button" aria-label="Announcement" aria-controls="announcementPanel" aria-expanded="false">
+            <span class="announcement-icon">i</span>
+          </button>
+          <a class="github-link-button" href="https://github.com/rotto-wind/" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <svg class="github-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 .5C5.65 .5 .5 5.65 .5 12c0 5.1 3.29 9.42 7.86 10.95.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.23-1.27-5.23-5.66 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.46.11-3.03 0 0 .96-.31 3.15 1.17.91-.25 1.89-.38 2.86-.38.97 0 1.95.13 2.86.38 2.19-1.48 3.15-1.17 3.15-1.17.62 1.57.23 2.74.11 3.03.74.8 1.18 1.82 1.18 3.07 0 4.4-2.69 5.37-5.25 5.65.41.35.78 1.05.78 2.12 0 1.53-.01 2.76-.01 3.14 0 .31.21.68.8.56A10.52 10.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z" />
+            </svg>
+          </a>
+          <div class="primary-actions">
+            <div class="primary-action-icon-frame">
+              <img class="primary-action-icon" src="assets/icon/piano.svg" alt="" aria-hidden="true">
+            </div>
+            <div class="primary-action-buttons">
+              <button id="toggleButton" type="button" disabled data-i18n="playPause">播放 / 暂停</button>
+              <button id="restartButton" type="button" disabled data-i18n="restart">重新开始</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="menuOverlay" class="menu-overlay" hidden></div>
+        <aside id="settingsMenu" class="settings-menu" aria-label="Settings menu" hidden>
+          <div class="settings-menu-header">
+            <strong>菜单</strong>
+          </div>
+
+          <details class="menu-section" open>
+            <summary>主题</summary>
+            <div class="menu-section-body">
+          <div class="option-group theme-options" aria-label="主题">
+            <label>
+              <input type="radio" name="themeMode" value="system" checked>
+              <span data-i18n="system">系统</span>
+            </label>
+            <label>
+              <input type="radio" name="themeMode" value="light">
+              <span data-i18n="light">亮</span>
+            </label>
+            <label>
+              <input type="radio" name="themeMode" value="dark">
+              <span data-i18n="dark">暗</span>
+            </label>
+          </div>
+            </div>
+          </details>
+
+        </aside>
+
+        <aside id="uploadPanel" class="upload-panel" aria-label="Upload panel" hidden>
+          <section class="menu-section">
+            <div class="menu-section-body">
+              <div class="menu-subsection">
+                <h3>MIDI</h3>
+                <label class="upload-button secondary-action" for="midiInput" data-i18n="uploadMidi">上传 MIDI 文件</label>
+                <input id="midiInput" type="file" accept=".mid,.midi">
+                <button id="midiExamplesButton" class="secondary-action" type="button" data-i18n="loadMidiExample">加载 MIDI 示例</button>
+                <div id="midiExamplePanel" class="example-panel" hidden>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th data-i18n="exampleName">名称</th>
+                        <th data-i18n="exampleSize">大小</th>
+                      </tr>
+                    </thead>
+                    <tbody id="midiExampleList"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="menu-subsection">
+                <h3 data-i18n="backgroundImageOptional">背景图片（可选）</h3>
+                <label id="backgroundImageButton" class="upload-button secondary-action" for="backgroundImageInput" data-i18n="uploadBackground">上传背景图片</label>
+                <input id="backgroundImageInput" class="hidden-file-input" type="file" accept="image/*" tabindex="-1">
+                <button id="imageExamplesButton" class="secondary-action" type="button" data-i18n="loadImageExample">加载背景示例</button>
+                <div id="imageExamplePanel" class="example-panel" hidden>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th data-i18n="exampleName">名称</th>
+                        <th data-i18n="exampleSize">大小</th>
+                      </tr>
+                    </thead>
+                    <tbody id="imageExampleList"></tbody>
+                  </table>
+                </div>
+                <div class="background-image-state-row">
+                  <small id="backgroundImageState" class="control-note" data-i18n="noBackground">未选择背景图片</small>
+                  <button id="backgroundImageRemoveButton" class="background-remove-button" type="button" aria-label="删除背景图片" title="删除背景图片" data-i18n-attr="aria-label:removeBackground,title:removeBackground" hidden>×</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </aside>
+        <aside id="customPanel" class="custom-panel" aria-label="Custom panel" hidden>
+          <section class="menu-section">
+            <div class="menu-section-body">
+              <div class="menu-subsection">
+                <label class="toggle-option">
+                  <span data-i18n="autoSustain">自动延音</span>
+                  <input id="autoSustainToggle" type="checkbox">
+                </label>
+                <label id="autoSustainDurationOption" class="range-option">
+                  <span data-i18n="sustainDuration">延音时长</span>
+                  <input id="autoSustainDuration" type="range" min="0" max="1" step="0.01" value="0.2">
+                  <strong id="autoSustainDurationValue">0.20s</strong>
+                </label>
+              </div>
+              <div class="menu-subsection">
+                <div class="color-option">
+                  <span data-i18n="noteColor">音符颜色</span>
+                  <input id="noteColorPicker" type="color" value="#2de1b4" aria-label="选择音符颜色" data-i18n-attr="aria-label:chooseNoteColor">
+                  <div class="color-presets" aria-label="推荐音符颜色" data-i18n-attr="aria-label:recommendedColors">
+                    <button class="color-preset" type="button" data-color="#fd9258" style="--preset-color: #fd9258" aria-label="暖橙"></button>
+                    <button class="color-preset" type="button" data-color="#f7e736" style="--preset-color: #f7e736" aria-label="亮黄"></button>
+                    <button class="color-preset is-selected" type="button" data-color="#2de1b4" style="--preset-color: #2de1b4" aria-label="薄荷绿"></button>
+                    <button class="color-preset" type="button" data-color="#68dffd" style="--preset-color: #68dffd" aria-label="天蓝"></button>
+                    <button class="color-preset" type="button" data-color="#8c77f3" style="--preset-color: #8c77f3" aria-label="紫蓝"></button>
+                  </div>
+                </div>
+                <label class="toggle-option">
+                  <span data-i18n="showGrid">显示网格</span>
+                  <input id="showGridToggle" type="checkbox">
+                </label>
+                <div class="option-group background-base-options" aria-label="背景底色">
+                  <span data-i18n="backgroundBase">背景底色</span>
+                  <label>
+                    <input type="radio" name="backgroundBase" value="default" checked>
+                    <span data-i18n="backgroundBaseDefault">默认</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="backgroundBase" value="black">
+                    <span data-i18n="backgroundBaseBlack">纯黑</span>
+                  </label>
+                </div>
+                <label id="backgroundOpacityOption" class="range-option is-disabled" aria-disabled="true">
+                  <span data-i18n="backgroundOpacity">背景不透明度</span>
+                  <input id="backgroundOpacity" type="range" min="0" max="1" step="0.01" value="0.6" disabled>
+                  <strong id="backgroundOpacityValue">0.60</strong>
+                </label>
+              </div>
+              <div class="menu-subsection effect-subsection">
+                <h3 data-i18n="effectSection">特效</h3>
+                <div class="option-group effect-options" aria-label="Visual effect">
+                  <label>
+                    <input type="checkbox" name="visualEffect" value="none" checked>
+                    <span data-i18n="effectNone">无</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" name="visualEffect" value="trail">
+                    <span data-i18n="effectTrail">拖尾</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" name="visualEffect" value="glow">
+                    <span data-i18n="effectGlow">发光边缘</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" name="visualEffect" value="fog">
+                    <span data-i18n="effectFog">雾气</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" name="visualEffect" value="stream">
+                    <span data-i18n="effectStream">流光</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" name="visualEffect" value="colorShift">
+                    <span data-i18n="effectColorShift">变色</span>
+                  </label>
+                </div>
+                <small class="effect-export-note" data-i18n="effectExportNote">特效可能导致掉帧，且会使后端导出时间变长</small>
+                <div class="effect-parameter-subsection">
+                  <h3 data-i18n="effectParameterSection">特效参数</h3>
+                  <fieldset id="fogQualityFieldset" class="effect-parameter-fieldset" disabled>
+                    <div class="option-group" aria-label="Fog quality">
+                      <span data-i18n="fogQuality">雾气质量</span>
+                      <label>
+                        <input type="radio" name="fogQuality" value="low">
+                        <span data-i18n="qualityLow">低</span>
+                      </label>
+                      <label>
+                        <input type="radio" name="fogQuality" value="medium" checked>
+                        <span data-i18n="qualityMedium">中</span>
+                      </label>
+                      <label>
+                        <input type="radio" name="fogQuality" value="high">
+                        <span data-i18n="qualityHigh">高</span>
+                      </label>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
+            </div>
+          </section>
+        </aside>
+
+
+        <aside id="savePanel" class="save-panel" aria-label="Save panel" hidden>
+          <fieldset id="saveMenuSection" class="menu-section save-menu-section" disabled>
+            <legend>另存为</legend>
+            <div class="menu-section-body">
+              <div class="option-group" aria-label="导出方式">
+                <span data-i18n="exportMode">导出方式</span>
+                <label>
+                  <input id="backendExportMode" type="radio" name="exportMode" value="backend" checked>
+                  <span id="backendModeLabel" data-i18n="backendMp4">后端生成 MP4</span>
+                </label>
+                <label>
+                  <input id="browserExportMode" type="radio" name="exportMode" value="browser">
+                  <span data-i18n="browserWebm">浏览器录屏 WebM</span>
+                </label>
+              </div>
+              <div class="option-group" aria-label="导出帧率">
+                <span data-i18n="fps">帧率</span>
+                <label>
+                  <input type="radio" name="exportFps" value="30">
+                  <span>30 FPS</span>
+                </label>
+                <label>
+                  <input type="radio" name="exportFps" value="60" checked>
+                  <span>60 FPS</span>
+                </label>
+              </div>
+              <div class="option-group" aria-label="Export resolution">
+                <span data-i18n="exportResolution">分辨率</span>
+                <label>
+                  <input type="radio" name="exportResolution" value="1280x720">
+                  <span>1280×720</span>
+                </label>
+                <label>
+                  <input type="radio" name="exportResolution" value="1600x900" checked>
+                  <span>1600×900</span>
+                </label>
+              </div>
+              <button id="exportButton" type="button" disabled data-i18n="saveAnimation">保存动画到本地</button>
+            </div>
+          </fieldset>
+        </aside>
+
+        <aside id="announcementPanel" class="announcement-panel" aria-label="Announcement panel" hidden>
+          <div class="announcement-panel-header">
+            <strong>公告</strong>
+          </div>
+          <div id="announcementList" class="announcement-list">
+            <p class="announcement-empty">公告加载中...</p>
+          </div>
+        </aside>
+
+        <div class="control-column status-column">
+          <div class="status-list">
+            <p><span data-i18n="fileLabel">文件：</span><strong id="fileName" data-i18n="notLoaded">未加载</strong></p>
+            <p><span data-i18n="soundLabel">音色：</span><strong id="sampleState" data-i18n="synthSound">合成音色</strong></p>
+            <p><span data-i18n="stateLabel">状态：</span><strong id="playState" data-i18n="waitingUpload">等待上传</strong></p>
+            <p><span data-i18n="exportLabel">导出：</span><strong id="exportState" data-i18n="idle">空闲</strong></p>
+            <p><span data-i18n="durationLabel">时长：</span><strong id="duration">0.00s</strong></p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="visualizerCard" class="visualizer-card">
+      <div class="visualizer-stage">
+        <canvas id="visualizer" width="1600" height="900"></canvas>
+        <div id="playbackControls" class="playback-controls" aria-hidden="true">
+          <div class="playback-progress-wrap">
+            <input id="playbackProgress" class="playback-progress" type="range" min="0" max="0" step="0.01" value="0" aria-label="播放进度" data-i18n-attr="aria-label:progress">
+          </div>
+          <button id="fullscreenButton" class="fullscreen-button" type="button" aria-label="全屏" data-i18n-attr="aria-label:fullscreen">⛶</button>
+        </div>
+      </div>
+      <div class="hint-bar">
+        <span data-i18n="spaceHint">空格键可暂停 / 继续</span>
+        <span data-i18n="velocityHint">力度影响声音和部分特效强度</span>
+      </div>
+    </main>
+  </div>
+
+  <div id="announcementDialog" class="announcement-dialog" role="dialog" aria-modal="true" aria-labelledby="announcementDialogTitle" hidden>
+    <div class="announcement-dialog-backdrop"></div>
+    <article class="announcement-dialog-card">
+      <button id="announcementDialogClose" class="announcement-dialog-close" type="button" aria-label="关闭公告">×</button>
+      <time id="announcementDialogDate" class="announcement-dialog-date"></time>
+      <h2 id="announcementDialogTitle"></h2>
+      <p id="announcementDialogContent"></p>
+    </article>
+  </div>
+
+  <script src="js/animation.js?v=20260621"></script>
+  <script src="js/audio.js?v=20260621"></script>
+  <script src="js/io.js?v=20260621"></script>
+  <script src="js/app.js?v=20260621"></script>
+</body>
+</html>

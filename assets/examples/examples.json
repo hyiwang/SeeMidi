@@ -1,0 +1,14 @@
+{
+  "midi": [
+    { "name": "Black Key Etude.mid", "url": "assets/examples/midi/Black%20Key%20Etude.mid", "size": 10907 },
+    { "name": "Departure!.mid", "url": "assets/examples/midi/Departure%21.mid", "size": 6375 },
+    { "name": "\u67ab.mid", "url": "assets/examples/midi/%E6%9E%AB.mid", "size": 10001 },
+    { "name": "\u76f8\u89c1\u6b22.mid", "url": "assets/examples/midi/%E7%9B%B8%E8%A7%81%E6%AC%A2.mid", "size": 9161 }
+  ],
+  "image": [
+    { "name": "concert.jpg", "url": "assets/examples/image/concert.jpg", "size": 100251 },
+    { "name": "maple.webp", "url": "assets/examples/image/maple.webp", "size": 98174 },
+    { "name": "original.avif", "url": "assets/examples/image/original.avif", "size": 36735 },
+    { "name": "\u76f8\u89c1\u6b22.jpg", "url": "assets/examples/image/%E7%9B%B8%E8%A7%81%E6%AC%A2.jpg", "size": 151034 }
+  ]
+}

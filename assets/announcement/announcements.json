@@ -1,0 +1,16 @@
+[
+  {
+    "id": "welcome",
+    "title": "欢迎使用见音(SeeMidi)",
+    "content": "你可以上传 MIDI 文件，自定义背景、音符颜色和特效，并导出动画。尽情发挥你的创造力吧！",
+    "date": "2026-06-15",
+    "valid": true
+  },
+  {
+    "id": "mobile-friendly",
+    "title": "致移动端用户",
+    "content": "在观看动画时，建议将设备调整为横屏显示以获得最佳体验。",
+    "date": "2026-06-16",
+    "valid": true
+  }
+]
