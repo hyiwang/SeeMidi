@@ -2,7 +2,7 @@
 
 这是一个将 MIDI 文件（可通过网络下载、音乐软件导出获取）可视化为钢琴瀑布流的网页。你可以在这里定制个性化的瀑布流动画，并导出它们。
 
-项目静态网页：https://rotto-wind.github.io/seemidi/
+项目静态网页：https://rotto-wind.github.io/SeeMidi/
 
 ## 用户手册
 
