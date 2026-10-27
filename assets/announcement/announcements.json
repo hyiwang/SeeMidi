@@ -12,5 +12,12 @@
     "content": "在观看动画时，建议将设备调整为横屏显示以获得最佳体验。",
     "date": "2026-06-16",
     "valid": true
+  },
+  {
+    "id": "source-available",
+    "title": "UprightPianoKW 音源已接入",
+    "content": "注意到在网页实际访问过程中，因 Salamander 音源过大加载时间过久导致的不良体验，现已默认采用 UprightPianoKW 音源（导出除外），你可以在菜单-音源处切换，以追求更好的音频效果。",
+    "date": "2026-10-28",
+    "valid": true
   }
 ]

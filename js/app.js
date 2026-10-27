@@ -28,6 +28,7 @@ const noteColorPicker = document.getElementById("noteColorPicker");
 const colorPresetButtons = Array.from(document.querySelectorAll(".color-preset"));
 const themeModeInputs = Array.from(document.querySelectorAll("input[name='themeMode']"));
 const languageModeInputs = Array.from(document.querySelectorAll("input[name='languageMode']"));
+const soundSourceInputs = Array.from(document.querySelectorAll("input[name='soundSource']"));
 const midiExamplesButton = document.getElementById("midiExamplesButton");
 const midiExamplePanel = document.getElementById("midiExamplePanel");
 const midiExampleList = document.getElementById("midiExampleList");
@@ -85,9 +86,19 @@ const MIDI_MAX = 108;
 const WHITE_PATTERN = new Set([0, 2, 4, 5, 7, 9, 11]);
 const SCHEDULE_AHEAD_TIME = 0.18;
 const SCHEDULER_INTERVAL_MS = 25;
-const SFZ_URL = "assets/Salamander/sfz_minimum/Accurate-SalamanderGrandPiano_flat.Recommended.sfz";
 const THEME_STORAGE_KEY = "piano-waterfall-theme";
 const LANGUAGE_STORAGE_KEY = "piano-waterfall-language";
+const SOUND_SOURCE_STORAGE_KEY = "piano-waterfall-sound-source";
+const SOUND_SOURCES = {
+  upright: {
+    label: "UprightPianoKW",
+    sfzUrl: "assets/UprightPianoKW/UprightPianoKW.sfz",
+  },
+  salamander: {
+    label: "Salamander",
+    sfzUrl: "assets/Salamander/sfz_minimum/Accurate-SalamanderGrandPiano_flat.Recommended.sfz",
+  },
+};
 
 const I18N = {
   zh: {
@@ -95,6 +106,9 @@ const I18N = {
     title: "见音 - Midi 钢琴瀑布流可视化",
     theme: "主题",
     language: "语言",
+    soundSource: "音源",
+    uprightSoundSourceInfo: "体积小 · 便于快速体验",
+    salamanderSoundSourceInfo: "体积较大 · 追求极致体验",
     system: "系统",
     light: "亮",
     dark: "暗",
@@ -194,18 +208,21 @@ const I18N = {
     progress_finalize: "正在打包 MP4",
     progressDone: "MP4 生成完成",
     progress_done: "MP4 生成完成",
-    readingSalamander: "正在读取本地 Salamander 音源",
+    readingSoundSource: "正在读取 {source} 音源",
     noSampleMapping: "未找到可用音源映射",
-    salamanderFallback: "Salamander 音源读取失败，回退合成音色",
-    sampleFallback: "Salamander 采样读取失败，已回退",
-    samplePreload: "Salamander 预加载中 ({count} 个样本)",
-    sampleReady: "Salamander 音源已就绪 ({count} 个样本)",
+    soundSourceFallback: "{source} 音源读取失败，回退合成音色",
+    sampleFallback: "音源采样读取失败，已回退",
+    samplePreload: "{source} 预加载中 ({count} 个样本)",
+    sampleReady: "{source} 音源已就绪 ({count} 个样本)",
   },
   en: {
     eyebrow: "MIDI Piano Waterfall",
     title: "SeeMidi - Midi Piano Waterfall Visualizer",
     theme: "Theme",
     language: "Language",
+    soundSource: "Sound",
+    uprightSoundSourceInfo: "Small · Quick experience",
+    salamanderSoundSourceInfo: "Large · Better experience",
     system: "System",
     light: "Light",
     dark: "Dark",
@@ -305,12 +322,12 @@ const I18N = {
     progress_finalize: "Muxing MP4",
     progressDone: "MP4 export complete",
     progress_done: "MP4 export complete",
-    readingSalamander: "Reading local Salamander source",
+    readingSoundSource: "Reading {source} source",
     noSampleMapping: "No usable sample mapping found",
-    salamanderFallback: "Failed to read Salamander, using synth fallback",
-    sampleFallback: "Failed to read Salamander sample, fallback enabled",
-    samplePreload: "Preloading Salamander ({count} samples)",
-    sampleReady: "Salamander ready ({count} samples)",
+    soundSourceFallback: "Failed to read {source}, using synth fallback",
+    sampleFallback: "Failed to read sound sample, fallback enabled",
+    samplePreload: "Preloading {source} ({count} samples)",
+    sampleReady: "{source} ready ({count} samples)",
   },
 };
 
@@ -340,6 +357,8 @@ const state = {
   sfzReady: false,
   sfzLoadingPromise: null,
   sampleWarmupPromise: null,
+  sfzLoadVersion: 0,
+  soundSource: "upright",
   backendAvailable: false,
   backgroundImage: null,
   backgroundImageObjectUrl: "",
@@ -476,6 +495,7 @@ announcementDialog.addEventListener("click", (event) => {
 });
 initTheme();
 initLanguage();
+initSoundSource();
 syncMenuState({ focusToggle: false });
 syncUploadState();
 syncCustomState();
@@ -595,6 +615,14 @@ for (const input of languageModeInputs) {
   input.addEventListener("change", () => {
     if (input.checked) {
       setLanguagePreference(input.value);
+    }
+  });
+}
+
+for (const input of soundSourceInputs) {
+  input.addEventListener("change", async () => {
+    if (input.checked) {
+      await setSoundSource(input.value);
     }
   });
 }
@@ -1065,6 +1093,56 @@ function initLanguage() {
     input.checked = input.value === preference;
   }
   applyLanguagePreference(preference);
+}
+
+function initSoundSource() {
+  const source = getSoundSourcePreference();
+  state.soundSource = source;
+  for (const input of soundSourceInputs) {
+    input.checked = input.value === source;
+  }
+}
+
+function getSoundSourcePreference() {
+  const stored = localStorage.getItem(SOUND_SOURCE_STORAGE_KEY);
+  return Object.hasOwn(SOUND_SOURCES, stored) ? stored : "upright";
+}
+
+function getActiveSoundSource() {
+  return SOUND_SOURCES[state.soundSource] || SOUND_SOURCES.upright;
+}
+
+async function setSoundSource(source) {
+  const nextSource = Object.hasOwn(SOUND_SOURCES, source) ? source : "upright";
+  if (nextSource === state.soundSource) {
+    return;
+  }
+
+  const resumePlayback = state.playing;
+  stopPlayback(false);
+  state.soundSource = nextSource;
+  localStorage.setItem(SOUND_SOURCE_STORAGE_KEY, nextSource);
+  state.sampleBuffers.clear();
+  state.sfzRegions = [];
+  state.sfzReady = false;
+  state.sfzLoadingPromise = null;
+  state.sampleWarmupPromise = null;
+  state.sfzLoadVersion += 1;
+  sampleStateEl.textContent = t("readingSoundSource", { source: getActiveSoundSource().label });
+
+  try {
+    await loadBundledPianoSource();
+    if (state.song && state.sfzReady) {
+      playStateEl.textContent = t("preparingSamples");
+      await preloadSamplesForSong(state.song);
+      playStateEl.textContent = t("loadedReady");
+    }
+    if (resumePlayback && state.song) {
+      await startPlayback();
+    }
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 function getLanguagePreference() {

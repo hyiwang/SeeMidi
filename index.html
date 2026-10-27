@@ -73,7 +73,7 @@
           </div>
 
           <details class="menu-section" open>
-            <summary>主题</summary>
+            <summary data-i18n="theme">主题</summary>
             <div class="menu-section-body">
           <div class="option-group theme-options" aria-label="主题">
             <label>
@@ -89,6 +89,24 @@
               <span data-i18n="dark">暗</span>
             </label>
           </div>
+            </div>
+          </details>
+
+          <details class="menu-section" open>
+            <summary data-i18n="soundSource">音源</summary>
+            <div class="menu-section-body">
+              <div class="option-group sound-source-options" aria-label="音源" data-i18n-attr="aria-label:soundSource">
+                <label>
+                  <input type="radio" name="soundSource" value="upright" checked>
+                  <span class="sound-source-name">UprightPianoKW</span>
+                  <small class="sound-source-description" data-i18n="uprightSoundSourceInfo">体积小 · 便于快速体验</small>
+                </label>
+                <label>
+                  <input type="radio" name="soundSource" value="salamander">
+                  <span class="sound-source-name">Salamander</span>
+                  <small class="sound-source-description" data-i18n="salamanderSoundSourceInfo">体积较大 · 追求极致体验</small>
+                </label>
+              </div>
             </div>
           </details>
 

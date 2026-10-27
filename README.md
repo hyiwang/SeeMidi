@@ -39,9 +39,9 @@
 
 **音源**
 
-该项目使用的音源是 **Salamander Grand Piano**，参考：https://www.ir.isas.jaxa.jp/~cyamauch/AccurateSalamander/index.html
+网页默认使用 **UprightPianoKW** 轻量音源；可在菜单的“音源”中切换为完整的 **Salamander Grand Piano**。音源文件分别位于 `assets\UprightPianoKW` 和 `assets\Salamander`。
 
-有关音源的文件都存放在 `assets\Salamander` 目录下。
+Salamander 音源参考：https://www.ir.isas.jaxa.jp/~cyamauch/AccurateSalamander/index.html
 
 ## 启动本地局域网服务器
 

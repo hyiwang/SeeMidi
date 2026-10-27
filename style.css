@@ -750,6 +750,40 @@ button:disabled {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.sound-source-options {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 10px;
+  border: 1px solid var(--soft-border);
+  border-radius: 8px;
+  background: var(--option-bg);
+}
+
+.sound-source-options label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 7px;
+  row-gap: 2px;
+  align-items: center;
+}
+
+.sound-source-options input {
+  grid-row: 1 / span 2;
+  margin: 0;
+}
+
+.sound-source-options .sound-source-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sound-source-options .sound-source-description {
+  grid-column: 2;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
 .top-language-options {
   flex: 0 0 auto;
   min-width: 280px;

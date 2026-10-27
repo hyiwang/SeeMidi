@@ -256,8 +256,10 @@ async function loadBundledPianoSource() {
     return state.sfzLoadingPromise;
   }
 
-  sampleStateEl.textContent = t("readingSalamander");
-  state.sfzLoadingPromise = fetch(SFZ_URL)
+  const source = getActiveSoundSource();
+  const loadVersion = state.sfzLoadVersion;
+  sampleStateEl.textContent = t("readingSoundSource", { source: source.label });
+  state.sfzLoadingPromise = fetch(source.sfzUrl)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`无法读取 SFZ：${response.status}`);
@@ -265,19 +267,25 @@ async function loadBundledPianoSource() {
       return response.text();
     })
     .then((sfzText) => {
-      state.sfzRegions = parseSfzRegions(sfzText, SFZ_URL);
+      if (loadVersion !== state.sfzLoadVersion || source !== getActiveSoundSource()) {
+        return;
+      }
+      state.sfzRegions = parseSfzRegions(sfzText, source.sfzUrl);
       state.sfzReady = state.sfzRegions.length > 0;
       sampleStateEl.textContent = state.sfzReady
-        ? "Salamander"
+        ? source.label
         : t("noSampleMapping");
       if (state.sfzReady) {
         warmupCommonSamples();
       }
     })
     .catch((error) => {
+      if (loadVersion !== state.sfzLoadVersion || source !== getActiveSoundSource()) {
+        return;
+      }
       console.error(error);
       state.sfzReady = false;
-      sampleStateEl.textContent = t("salamanderFallback");
+      sampleStateEl.textContent = t("soundSourceFallback", { source: source.label });
     });
 
   return state.sfzLoadingPromise;
@@ -307,7 +315,7 @@ function warmupCommonSamples() {
 
   state.sampleWarmupPromise = preloadWithConcurrency(samplePaths, 2)
     .catch((error) => {
-      console.warn("Salamander warmup failed.", error);
+      console.warn(`${getActiveSoundSource().label} warmup failed.`, error);
     });
 
   return state.sampleWarmupPromise;
@@ -515,12 +523,8 @@ function parseSfzRegions(sfzText, sfzUrl) {
       } else if (currentTag === "region") {
         const merged = { ...groupOpcodes, ...parsedOpcodes };
         const sampleValue = merged.sample;
-        if (!sampleValue) {
-          continue;
-        }
-
         regions.push({
-          sample: buildSampleUrl(sampleValue, baseUrl),
+          sample: sampleValue ? buildSampleUrl(sampleValue, baseUrl) : "",
           lokey: Number(merged.lokey ?? merged.key ?? MIDI_MIN),
           hikey: Number(merged.hikey ?? merged.key ?? MIDI_MAX),
           lovel: Number(merged.lovel ?? 1),
@@ -539,12 +543,12 @@ function parseSfzRegions(sfzText, sfzUrl) {
     } else if (currentTag === "region") {
       const previous = regions[regions.length - 1];
       if (previous) {
-        Object.assign(previous, normalizeRegionFields(parseSfzOpcodeText(line), previous));
+        Object.assign(previous, normalizeRegionFields(parseSfzOpcodeText(line), previous, baseUrl));
       }
     }
   }
 
-  return regions;
+  return regions.filter((region) => region.sample);
 }
 
 function parseSfzOpcodeText(text) {
@@ -557,7 +561,7 @@ function parseSfzOpcodeText(text) {
   return opcodes;
 }
 
-function normalizeRegionFields(opcodes, region) {
+function normalizeRegionFields(opcodes, region, baseUrl) {
   const next = {};
   if (opcodes.sample) {
     next.sample = opcodes.sample;
@@ -567,6 +571,12 @@ function normalizeRegionFields(opcodes, region) {
   }
   if (opcodes.hikey) {
     next.hikey = Number(opcodes.hikey);
+  }
+  if (opcodes.key) {
+    const key = Number(opcodes.key);
+    next.lokey = key;
+    next.hikey = key;
+    next.pitchKeycenter = key;
   }
   if (opcodes.lovel) {
     next.lovel = Number(opcodes.lovel);
@@ -588,7 +598,7 @@ function normalizeRegionFields(opcodes, region) {
   }
 
   if (next.sample) {
-    next.sample = buildSampleUrl(next.sample, window.location.href);
+    next.sample = buildSampleUrl(next.sample, baseUrl);
   } else {
     next.sample = region.sample;
   }
@@ -644,15 +654,21 @@ async function preloadSamplesForSong(song) {
   const samplePaths = Array.from(uniqueSamplePaths)
     .filter((samplePath) => !state.sampleBuffers.has(samplePath));
   if (!samplePaths.length) {
-    sampleStateEl.textContent = "Salamander";
+    sampleStateEl.textContent = getActiveSoundSource().label;
     return;
   }
 
-  sampleStateEl.textContent = t("samplePreload", { count: samplePaths.length });
+  sampleStateEl.textContent = t("samplePreload", {
+    source: getActiveSoundSource().label,
+    count: samplePaths.length,
+  });
 
   await preloadWithConcurrency(samplePaths, 4);
 
-  sampleStateEl.textContent = t("sampleReady", { count: samplePaths.length });
+  sampleStateEl.textContent = t("sampleReady", {
+    source: getActiveSoundSource().label,
+    count: samplePaths.length,
+  });
 }
 
 async function preloadWithConcurrency(samplePaths, concurrency) {
